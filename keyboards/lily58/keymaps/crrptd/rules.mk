@@ -21,9 +21,6 @@ SRC +=  ./lib/logo_reader.c \
         ./lib/layer_state_reader.c \
         ./lib/mode_icon_reader.c \
         ./lib/timelogger.c
-        # ./lib/keylogger_comet46.c
-		# ./lib/keylogger_custom.c
-        # ./lib/keylogger.c
 
 # Custom rules
 CONVERT_TO = rp2040_ce
