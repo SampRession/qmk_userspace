@@ -13,7 +13,6 @@
 #include "oled_hud.h"
 #include "oled_slave.h"
 
-#define BOOT_LOGO_MS 2500
 #define HIST_LEN 28
 #define HIST_SAMPLE_MS 500
 #define SLEEP_FRAMES 20 // frames at 0 WPM before Lily falls asleep (~5 s)
@@ -266,10 +265,11 @@ static void draw_lily(uint8_t layer, uint16_t t, uint8_t wpm, bool sleeping, int
         gfx_px(hcx + 8, y + 1, true);
         gfx_px(hcx + 9, y + 1, true);
     }
-    if (p.fx & FX_ZZZ) {
-        int16_t k = t % 12;
-        gfx_text("Z", hcx + 5, hcy - 12 - (k >> 1));
-        if (k > 5) gfx_text("Z", hcx + 9, hcy - 18 - ((k - 6) >> 1));
+    if (p.fx & FX_ZZZ) { // a Z rises from behind the head, two more follow higher up
+        int16_t k = t % 18;
+        gfx_text("Z", hcx + 5, hcy - 18 - (k >> 1));
+        if (k > 5) gfx_text("Z", hcx + 9, hcy - 24 - ((k - 6) >> 1));
+        if (k > 11) gfx_text("Z", hcx + 13, hcy - 30 - ((k - 12) >> 1));
     }
 }
 
@@ -328,7 +328,7 @@ void oled_slave_render(void) {
     static uint8_t  last_wpm    = 0xFF;
     static uint8_t  hist[HIST_LEN];
 
-    if (timer_read32() < BOOT_LOGO_MS) {
+    if (timer_read32() < OLED_BOOT_MS) {
         if (!logo_done) {
             gfx_begin();
             draw_logo();

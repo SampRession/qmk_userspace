@@ -56,9 +56,9 @@ const FONT = {
   0: [7, 5, 5, 5, 7], 1: [2, 6, 2, 2, 7], 2: [6, 1, 2, 4, 7], 3: [6, 1, 2, 1, 6], 4: [5, 5, 7, 1, 1],
   5: [7, 4, 6, 1, 6], 6: [3, 4, 6, 5, 2], 7: [7, 1, 2, 2, 2], 8: [2, 5, 2, 5, 2], 9: [2, 5, 3, 1, 6],
 };
-function glyph(g, ch, x, y, v = 1) {
+function glyph(g, ch, x, y, v = 1, scale = 1) {
   const f = FONT[ch]; if (!f) return;
-  for (let r = 0; r < 5; r++) for (let b = 0; b < 3; b++) if ((f[r] >> (2 - b)) & 1) px(g, x + b, y + r, v);
+  for (let r = 0; r < 5; r++) for (let b = 0; b < 3; b++) if ((f[r] >> (2 - b)) & 1) frect(g, x + b * scale, y + r * scale, scale, scale, v);
 }
 function text(g, s, y, x) {
   if (x === undefined) x = Math.floor((W - (s.length * 4 - 1)) / 2);
@@ -261,10 +261,11 @@ function drawLily(g, layer, t, wpm, sleeping, cx, ground, top, style) {
     pts.forEach(([dx, dy], i) => { if ((t + i) % 3 === 0) { const x = h.hcx + dx, y = h.hcy + dy; px(g, x, y); px(g, x - 1, y); px(g, x + 1, y); px(g, x, y - 1); px(g, x, y + 1); } });
   }
   if (p.fx.includes('sweat')) { const y = h.hcy - 3 + (t % 4); px(g, h.hcx + 8, y); px(g, h.hcx + 8, y + 1); px(g, h.hcx + 9, y + 1); }
-  if (p.fx.includes('zzz')) {
-    const k = t % 12;
-    glyph(g, 'Z', h.hcx + 5, h.hcy - 12 - (k >> 1));
-    if (k > 5) glyph(g, 'Z', h.hcx + 9, h.hcy - 18 - ((k - 6) >> 1));
+  if (p.fx.includes('zzz')) {   // a Z rises from behind the head, two more follow higher up
+    const k = t % 18;
+    glyph(g, 'Z', h.hcx + 5, h.hcy - 18 - (k >> 1));
+    if (k > 5) glyph(g, 'Z', h.hcx + 9, h.hcy - 24 - ((k - 6) >> 1));
+    if (k > 11) glyph(g, 'Z', h.hcx + 13, h.hcy - 30 - ((k - 12) >> 1));
   }
 }
 
