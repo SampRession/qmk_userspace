@@ -8,17 +8,8 @@
 
 #include QMK_KEYBOARD_H
 
-enum layer_number {
-    _QWERTY  = 0,
-    _LOWER   = 1,
-    _RAISE   = 2,
-    _ADJUST  = 3,
-    _HARDER  = 4,
-    _MIRROR,
-    _LMIRROR,
-    _GAMING1,
-    _LGAMNG1,
-};
+#include "layers.h"
+#include "oled_master.h"
 
 #define CTRLESC MT(MOD_LCTL, KC_ESC)
 // #define LOWER MO(_LOWER)
@@ -267,56 +258,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
   if (is_keyboard_master()) {
-        // return OLED_ROTATION_270;  // flip the master display (top to bottom)
-        return OLED_ROTATION_180;  // flip the master display (right to left)
+        return OLED_ROTATION_270;  // portrait (32x128), see oled_master.c
     } else {
         return rotation;
-    }
-}
-
-// TODO: Customize OLED
-void render_default_layer_state(void) {
-    // oled_write_P(PSTR("Layer:\n"), false);
-    oled_write_ln(PSTR("Layer:"), false);
-    // oled_write_P(PSTR(" "), false);
-    switch (get_highest_layer(layer_state)) {
-        case _QWERTY:
-            // oled_write_P(PSTR("BASE "), false); // TTB version
-            oled_write_ln(PSTR("QWERTY"), false); // RTL version
-            break;
-        case _LOWER:
-            oled_write_ln(PSTR("LOWER"), false);
-            break;
-        case _RAISE:
-            oled_write_ln(PSTR("RAISE"), false);
-            break;
-        case _ADJUST:
-            // oled_write_P(PSTR("ADJST"), false); // TTB version
-            oled_write_ln(PSTR("ADJUST"), false); // RTL version
-            break;
-        case _HARDER:
-            // oled_write_P(PSTR("HARDR"), false); // TTB version
-            oled_write_ln(PSTR("/!\\ ATTENTION /!\\"), false); // RTL version
-            break;
-        case _MIRROR:
-            // oled_write_P(PSTR("BLNDR"), false); // TTB version
-            oled_write_ln(PSTR("MIRROR MODE"), false); // RTL version
-            break;
-        case _LMIRROR:
-            // oled_write_P(PSTR("LBLDR"), false); // TTB version
-            oled_write_ln(PSTR("MIRROR LOWER"), false); // RTL version
-            break;
-        case _GAMING1:
-            // oled_write_P(PSTR("GAMNG"), false); // TTB version
-            oled_write_ln(PSTR("GAMING QAZ MODE"), false); // RTL version
-            // oled_write_ln(PSTR("Full QAZ switch"), false); // RTL version
-            break;
-        case _LGAMNG1:
-            // oled_write_P(PSTR("LGAMG"), false); // TTB version
-            oled_write_ln(PSTR("ESDF-QAZ LOWER"), false); // RTL version
-            break;
-        default:
-            oled_write_ln(PSTR(" N/A "), false); // TTB version
     }
 }
 
@@ -336,8 +280,8 @@ const char *read_logo(void);
 
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
-        // Show keyboard layout
-        render_default_layer_state();
+        // Layer indicator: icon, layer stack and WPM gauge
+        oled_master_render();
         // Add a empty line
         // oled_write_P(PSTR("-----"), false);
         // Keylogger
