@@ -409,13 +409,10 @@ function lilyFlame(g, o) {
 
 // Style "Fleur": same round face, the top opens into a lily: three pointed tepals,
 // the outer two curling out, two stamens peeking between them.
-function lilyFlower(g, o) {
-  const R = 6, stem = Math.max(2, 6 - o.squash + o.stretch);
-  const gy = o.ground - o.lift, cx = o.cx + o.bx, hcx = cx + o.hx, fc = hcx - 0.5;
-  const hcy = gy - stem - R - 1;
-  const deg = Math.PI / 180;
-  const sway = o.sleep ? 0.5 : o.spin ? [-0.25, 0, 0.25, 0][o.t % 4] : (o.hx || 0) * 0.12;
-  const droop = o.sleep ? 0.45 : 0;
+// Flower head: stamens, three tepals and the face disk, centred on (hcx - 0.5, hcy).
+// tools/oled-mockup/gen_lily_sprites.js bakes it into sprites for the C code.
+function flowerHead(g, hcx, hcy, sway, droop) {
+  const R = 6, fc = hcx - 0.5, deg = Math.PI / 180;
   const cy = hcy - 3;                                   // petals grow from here
   const P = (ang, d) => [fc + Math.cos(ang) * d, cy + Math.sin(ang) * d];
   // stamens first, then tepals: pointed leaf shapes, each with a black rim so they
@@ -436,9 +433,23 @@ function lilyFlower(g, o) {
   tepal(-30 * deg + sway + droop, 2, 13, 3.2);
   tepal(-90 * deg + sway, 2, 15, 3.6);
   disk(g, fc, hcy, R + 1, 0); disk(g, fc, hcy, R, 1);
+}
+// The head poses the C code supports: index = FLOWER_SWAY order below.
+const FLOWER_SWAYS = [[-0.25, 0], [-0.12, 0], [0, 0], [0.12, 0], [0.25, 0], [0.5, 0.45]];
+function flowerSway(o) {
+  if (o.sleep) return 5;
+  if (o.spin) return [0, 2, 4, 2][o.t % 4];
+  return 2 + (o.hx || 0);
+}
+function lilyFlower(g, o) {
+  const R = 6, stem = Math.max(2, 6 - o.squash + o.stretch);
+  const gy = o.ground - o.lift, cx = o.cx + o.bx, hcx = cx + o.hx;
+  const hcy = gy - stem - R - 1;
+  const [sway, droop] = FLOWER_SWAYS[flowerSway(o)];
+  flowerHead(g, hcx, hcy, sway, droop);
   body(g, cx, hcy + R + 1, gy, o, stem);
   face(g, hcx, hcy + 1, o, 0, { sp: 2, eh: 2, mo: 2 });
-  return { hcx, hcy, top: cy - 13 };
+  return { hcx, hcy, top: hcy - 16 };
 }
 const STYLES = { v1: lily, star: lilyStar, bud: lilyBud, hat: lilyHat, flame: lilyFlame, flower: lilyFlower };
 
@@ -463,4 +474,4 @@ function drawB(g, s) {
   for (let x = 2; x < 30; x += 2) px(g, x, 126);
 }
 
-if (typeof module !== 'undefined') module.exports = { W, H, makeScreen, drawA, drawB, drawC, LAYERS, makeScreen };
+if (typeof module !== 'undefined') module.exports = { W, H, makeScreen, drawA, drawB, drawC, LAYERS, flowerHead, FLOWER_SWAYS };
