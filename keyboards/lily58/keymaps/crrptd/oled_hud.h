@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+// Both screens show their boot intro this long after power-up.
+#define OLED_BOOT_MS 3000
+
 const char *oled_layer_name(uint8_t layer);
 
 // Layer name at the top, dotted rule under it.

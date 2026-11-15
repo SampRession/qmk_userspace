@@ -28,3 +28,7 @@ void gfx_sprite(const char *const *rows, uint8_t n, int16_t x, int16_t y);
 
 // 3x5 font, upper case letters, digits, '!' and space. Centred when x < 0.
 void gfx_text(const char *s, int16_t x, int16_t y);
+// Same, each font pixel drawn as a scale x scale square.
+void gfx_text_scaled(const char *s, int16_t x, int16_t y, uint8_t scale);
+// Left edge that centres `len` characters at this scale.
+int16_t gfx_text_x(uint8_t len, uint8_t scale);

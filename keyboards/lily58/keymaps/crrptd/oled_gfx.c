@@ -123,11 +123,15 @@ static const glyph_t *find_glyph(char c) {
     return NULL; // space and unknown characters draw nothing
 }
 
-void gfx_text(const char *s, int16_t x, int16_t y) {
+int16_t gfx_text_x(uint8_t len, uint8_t scale) {
+    return (GFX_W - ((int16_t)len * 4 - 1) * scale) / 2;
+}
+
+void gfx_text_scaled(const char *s, int16_t x, int16_t y, uint8_t scale) {
     if (x < 0) {
-        x = (GFX_W - ((int16_t)strlen(s) * 4 - 1)) / 2;
+        x = gfx_text_x(strlen(s), scale);
     }
-    for (; *s != '\0'; s++, x += 4) {
+    for (; *s != '\0'; s++, x += 4 * scale) {
         const glyph_t *g = find_glyph(*s);
         if (g == NULL) {
             continue;
@@ -135,9 +139,13 @@ void gfx_text(const char *s, int16_t x, int16_t y) {
         for (int16_t r = 0; r < 5; r++) {
             for (int16_t b = 0; b < 3; b++) {
                 if ((g->rows[r] >> (2 - b)) & 1) {
-                    gfx_px(x + b, y + r, true);
+                    gfx_frect(x + b * scale, y + r * scale, scale, scale, true);
                 }
             }
         }
     }
+}
+
+void gfx_text(const char *s, int16_t x, int16_t y) {
+    gfx_text_scaled(s, x, y, 1);
 }

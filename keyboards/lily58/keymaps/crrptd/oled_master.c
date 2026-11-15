@@ -3,6 +3,8 @@
 // with the typing speed. Mockup and reference: tools/oled-mockup (variant A).
 #include QMK_KEYBOARD_H
 
+#include <string.h>
+
 #include "layers.h"
 #include "oled_gfx.h"
 #include "oled_hud.h"
@@ -192,6 +194,52 @@ static void draw_icon(uint8_t layer, uint16_t t) {
     gfx_noclip();
 }
 
+// ---- boot intro: a greeting typed out, then a blinking cursor ----
+
+#define BOOT_CHAR_MS 110
+
+static void draw_boot(uint16_t ms) {
+    static const struct {
+        const char *s;
+        uint8_t     scale;
+        int16_t     y;
+    } lines[] = {
+        {"HEY", 2, 30},
+        {"BEW", 2, 46},
+        {"READY", 1, 66},
+    };
+    uint8_t n_lines = sizeof(lines) / sizeof(lines[0]);
+    uint8_t left    = ms / BOOT_CHAR_MS; // characters typed so far
+    int16_t cur_x = 0, cur_y = 0;
+    uint8_t cur_s  = 1;
+    bool    typing = false;
+
+    gfx_begin();
+    for (uint8_t i = 0; i < n_lines; i++) {
+        uint8_t len = strlen(lines[i].s);
+        int16_t x   = gfx_text_x(len, lines[i].scale);
+        uint8_t n   = left < len ? left : len;
+        char    buf[8];
+        memcpy(buf, lines[i].s, n);
+        buf[n] = '\0';
+        gfx_text_scaled(buf, x, lines[i].y, lines[i].scale);
+
+        cur_x = x + n * 4 * lines[i].scale;
+        cur_y = lines[i].y;
+        cur_s = lines[i].scale;
+        if (left < len) { // still typing this line
+            typing = true;
+            break;
+        }
+        left -= len;
+    }
+    // solid while typing, blinking once done
+    if (typing || (ms / 250) % 2 == 0) {
+        gfx_frect(cur_x, cur_y, 3 * cur_s, 5 * cur_s, true);
+    }
+    gfx_end();
+}
+
 // ---- entry point, called from oled_task_user() on the master ----
 
 void oled_master_render(void) {
@@ -199,6 +247,12 @@ void oled_master_render(void) {
     static uint16_t t          = 0;
     static uint8_t  last_layer = NONE;
     static uint8_t  last_wpm   = NONE;
+
+    uint32_t now = timer_read32();
+    if (now < OLED_BOOT_MS) {
+        draw_boot((uint16_t)now);
+        return;
+    }
 
     uint8_t layer = get_highest_layer(layer_state | default_layer_state);
     uint8_t wpm   = get_current_wpm();
