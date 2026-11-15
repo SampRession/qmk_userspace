@@ -5,38 +5,17 @@
 
 #include "layers.h"
 #include "oled_gfx.h"
+#include "oled_hud.h"
 #include "oled_master.h"
 
 #define NONE 0xFF
-
-static const char *layer_name(uint8_t layer) {
-    switch (layer) {
-        case _QWERTY:  return "BASE";
-        case _LOWER:   return "LOWER";
-        case _RAISE:   return "RAISE";
-        case _ADJUST:  return "ADJUST";
-        case _HARDER:  return "HARDER";
-        case _MIRROR:  return "MIRROR";
-        case _LMIRROR: return "LMIRROR";
-        case _GAMING1: return "GAMING";
-        case _LGAMNG1: return "LGAMING";
-        default:       return "?";
-    }
-}
 
 static uint8_t tri6(uint16_t t) {
     static const uint8_t wave[6] = {0, 1, 2, 3, 2, 1};
     return wave[t % 6];
 }
 
-// ---- header and footer ----
-
-static void draw_hud(uint8_t layer) {
-    gfx_text(layer_name(layer), -1, 3);
-    for (int16_t x = 2; x < 30; x += 2) {
-        gfx_px(x, 11, true);
-    }
-}
+// ---- stack and gauge ----
 
 // Three slabs: the floors of the current family (raise / base / lower).
 static void draw_stack(uint8_t layer, uint16_t t) {
@@ -224,9 +203,7 @@ void oled_master_render(void) {
     uint8_t layer = get_highest_layer(layer_state | default_layer_state);
     uint8_t wpm   = get_current_wpm();
 
-    // Frame duration: 260 ms idle, faster as you type, 35 ms at most.
-    uint16_t speedup  = (uint16_t)wpm * 17 / 10;
-    uint16_t interval = wpm == 0 ? 260 : (speedup >= 205 ? 35 : 240 - speedup);
+    uint16_t interval = oled_frame_interval(wpm);
 
     bool redraw = false;
     if (layer != last_layer) {
@@ -247,9 +224,10 @@ void oled_master_render(void) {
         return;
     }
 
-    oled_clear();
-    draw_hud(layer);
+    gfx_begin();
+    oled_draw_hud(layer);
     draw_icon(layer, t);
     draw_stack(layer, t);
     draw_gauge(wpm);
+    gfx_end();
 }

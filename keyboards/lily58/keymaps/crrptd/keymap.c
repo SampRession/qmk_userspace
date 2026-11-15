@@ -10,6 +10,7 @@
 
 #include "layers.h"
 #include "oled_master.h"
+#include "oled_slave.h"
 
 #define CTRLESC MT(MOD_LCTL, KC_ESC)
 // #define LOWER MO(_LOWER)
@@ -260,7 +261,7 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
   if (is_keyboard_master()) {
         return OLED_ROTATION_270;  // portrait (32x128), see oled_master.c
     } else {
-        return rotation;
+        return OLED_ROTATION_270;  // portrait too
     }
 }
 
@@ -292,8 +293,8 @@ bool oled_task_user(void) {
         // oled_write_ln(read_timelog(), false);
     //oled_write_ln(read_mode_icon(keymap_config.swap_lalt_lgui), false);
     } else {
-        oled_write(read_logo(), false); // default to display Lily58 logo
-        // render_image(); // custom image display
+        // Boot logo, then Lily
+        oled_slave_render();
     }
     return false;
 }

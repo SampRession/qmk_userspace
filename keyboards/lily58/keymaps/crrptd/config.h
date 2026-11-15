@@ -6,6 +6,12 @@
 // OLED
 #define OLED_FONT_H "lib/glcdfont_lily.c"
 
+// The left screen (Lily) needs the layer and the WPM from the master, and its
+// activity so it sleeps and wakes with the right half.
+#define SPLIT_LAYER_STATE_ENABLE
+#define SPLIT_WPM_ENABLE
+#define SPLIT_ACTIVITY_ENABLE
+
 // Caps Word
 #define BOTH_SHIFTS_TURNS_ON_CAPS_WORD
 

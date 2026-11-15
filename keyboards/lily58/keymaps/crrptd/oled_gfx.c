@@ -6,6 +6,22 @@
 static int16_t clip_top = 0;
 static int16_t clip_bot = GFX_H;
 
+// Frames are drawn here, then only the bytes that changed go to the OLED
+// buffer, so the driver re-sends a few blocks instead of the whole screen.
+// Same layout as the driver's buffer in portrait: 32 columns x 16 pages.
+static uint8_t frame[GFX_W * GFX_H / 8];
+
+void gfx_begin(void) {
+    memset(frame, 0, sizeof(frame));
+    gfx_noclip();
+}
+
+void gfx_end(void) {
+    for (uint16_t i = 0; i < sizeof(frame); i++) {
+        oled_write_raw_byte((char)frame[i], i);
+    }
+}
+
 void gfx_clip(int16_t top, int16_t bot) {
     clip_top = top;
     clip_bot = bot;
@@ -19,7 +35,12 @@ void gfx_px(int16_t x, int16_t y, bool on) {
     if (x < 0 || x >= GFX_W || y < clip_top || y >= clip_bot) {
         return;
     }
-    oled_write_pixel((uint8_t)x, (uint8_t)y, on);
+    uint8_t *b = &frame[x + (y / 8) * GFX_W];
+    if (on) {
+        *b |= 1 << (y % 8);
+    } else {
+        *b &= ~(1 << (y % 8));
+    }
 }
 
 void gfx_frect(int16_t x, int16_t y, int16_t w, int16_t h, bool on) {
@@ -46,7 +67,30 @@ void gfx_sprite(const char *const *rows, uint8_t n, int16_t x, int16_t y) {
         for (int16_t i = 0; rows[j][i] != '\0'; i++) {
             if (rows[j][i] == '#') {
                 gfx_px(x + i, y + j, true);
+            } else if (rows[j][i] == 'o') {
+                gfx_px(x + i, y + j, false);
             }
+        }
+    }
+}
+
+void gfx_line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, bool on) {
+    int16_t dx = x1 > x0 ? x1 - x0 : x0 - x1, sx = x0 < x1 ? 1 : -1;
+    int16_t dy = y1 > y0 ? y0 - y1 : y1 - y0, sy = y0 < y1 ? 1 : -1;
+    int16_t e  = dx + dy;
+    for (;;) {
+        gfx_px(x0, y0, on);
+        if (x0 == x1 && y0 == y1) {
+            break;
+        }
+        int16_t e2 = 2 * e;
+        if (e2 >= dy) {
+            e += dy;
+            x0 += sx;
+        }
+        if (e2 <= dx) {
+            e += dx;
+            y0 += sy;
         }
     }
 }

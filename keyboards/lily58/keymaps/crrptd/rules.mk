@@ -25,7 +25,9 @@ SRC +=  ./lib/logo_reader.c \
 
 # Portrait OLED screens
 SRC += oled_gfx.c \
-       oled_master.c
+       oled_hud.c \
+       oled_master.c \
+       oled_slave.c
 
 # Custom rules
 CONVERT_TO = rp2040_ce
