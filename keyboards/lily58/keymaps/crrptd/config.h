@@ -11,6 +11,9 @@
 #define SPLIT_LAYER_STATE_ENABLE
 #define SPLIT_WPM_ENABLE
 #define SPLIT_ACTIVITY_ENABLE
+// The slave screen follows the master's on/off state: it turns off when the
+// host suspends and on the master's timeout, instead of only on its own keys.
+#define SPLIT_OLED_ENABLE
 
 // Caps Word
 #define BOTH_SHIFTS_TURNS_ON_CAPS_WORD
