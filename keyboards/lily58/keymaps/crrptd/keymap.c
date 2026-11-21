@@ -255,43 +255,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // SSD1306 OLED update loop, make sure to enable OLED_ENABLE=yes in rules.mk
 #ifdef OLED_ENABLE
 
-// NOTE: TTB = Top-to-bottom / RTL = Right-to-left (orientation)
-
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  if (is_keyboard_master()) {
-        return OLED_ROTATION_270;  // portrait (32x128), see oled_master.c
-    } else {
-        return OLED_ROTATION_270;  // portrait too
-    }
+    return OLED_ROTATION_270;  // portrait (32x128), see oled_master.c
 }
-
-// When you add source files to SRC in rules.mk, you can use functions.
-const char *read_layer_state(void);
-const char *read_logo(void);
-// const char *read_image(void);
-// void set_keylog(uint16_t keycode, keyrecord_t *record);
-// const char *read_keylog(void);
-// void set_keylog(uint16_t keycode);
-// const char *read_keylogs(void);
-
-// const char *read_mode_icon(bool swap);
-// const char *read_host_led_state(void);
-// void set_timelog(void);
-// const char *read_timelog(void);
 
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
         // Layer indicator: icon, layer stack and WPM gauge
         oled_master_render();
-        // Add a empty line
-        // oled_write_P(PSTR("-----"), false);
-        // Keylogger
-        // render_keylogger_status(); // Don't know where this line comes from
-        // oled_write_ln(read_keylog(), false);
-        // oled_write_ln(read_keylogs(), false);
-        // oled_write_P(PSTR("-----"), false);
-        // oled_write_ln(read_timelog(), false);
-    //oled_write_ln(read_mode_icon(keymap_config.swap_lalt_lgui), false);
     } else {
         // Boot logo, then Lily
         oled_slave_render();
@@ -300,35 +271,6 @@ bool oled_task_user(void) {
 }
 
 #endif // OLED_ENABLE
-
-// --------  KEYLOG  --------
-// bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-// #ifdef OLED_ENABLE
-//   if (record->event.pressed) {
-//     set_keylog(keycode, record);
-//     // set_timelog();
-//   }
-// #endif
-//   return true;
-// }
-
-
-// -------- TAP-HOLD --------
-// bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-//     switch (keycode) {
-//         case DT_UP:
-//             if (record->event.pressed) {
-//                 g_tapping_term += 50;
-//             }
-//             break;
-//         case DT_DOWN:
-//             if (record->event.pressed) {
-//                 g_tapping_term -= 50;
-//             }
-//             break;
-//     }
-//     return true;
-// }
 
 // -------- LEADER --------
 
